@@ -23,17 +23,22 @@ def gen_fake_ppg_data(usrID,devID,timestamp):
 
 
  
-number_of_online_user = 1000
+number_of_online_user = 800
 
 st = time.time_ns()
+dt=0
 while True:
-    time.sleep(1)
+    
     tmp =time.time_ns()
-    print(f"period : {(tmp-st)//1000000} ms")
+    print(f"period : {(tmp-st)//1000000} ms, delay ={dt/1.000}sec")
     st=tmp
     for i in range(number_of_online_user): # emulate 1000
         t = time.time_ns()
         key= gen_fake_ppg_data(usrID=i,devID=i,timestamp=t)
-        redis.set(name=key,value=1,ex=16) # exp = 180 sec
+        redis.set(name=key,value=1,ex=16) # exp = 16 sec 
+    dt = 1-(time.time_ns()-tmp)/1000000000.000
+    if(dt <=0):
+        dt=0
 
+    time.sleep(dt) #try to make sure 1sec in period
 

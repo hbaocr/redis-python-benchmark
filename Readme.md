@@ -30,7 +30,7 @@ docker-compose down
   ```
   For `100byte` ppg : the `key` size is around `200byte` ===> to serve 1000 user and 1key/usr/1 sec and cache for 16 sec  :  16 * 1000 * 200 = 32*10^5 byte = 3.2 MByte
 
-==> it took around `60-70ms` to retrieve all the `key` in redis
+==> it took around `60-80ms` to retrieve all the `key` in redis
 
 
 
@@ -44,3 +44,23 @@ docker-compose down
 
 * read all the keys :
   * `python3 rx_allpatient_8sec.py `
+
+
+
+## Benchmark for 800pat  : 1msg/1pat/1sec
+
+* Packet size ( key size) : ~ 193 Byte
+![keysize](KeySize.png)
+
+* Get All `key` data from redis each 8 sec :
+  * key_TTL = 16 sec ==> buffer 16 sec data/ patient
+  * 800 pat  on line the same time ===> total key ~ 800*16 = 12800 msg
+  * It take around 75-80ms to get all 12800 msg from redis
+  * ![rx_800.png](rx_800.png)
+* Memory analyse
+  * ![800_user.png](800_user.png)
+  
+
+  
+
+
