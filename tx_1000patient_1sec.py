@@ -23,10 +23,12 @@ def gen_fake_ppg_data(usrID,devID,timestamp):
 
 
  
-number_of_online_user = 800
+number_of_online_user = 500
 
 st = time.time_ns()
 dt=0
+timer_sec=1
+msg_ttl_sec = 16
 while True:
     
     tmp =time.time_ns()
@@ -35,8 +37,8 @@ while True:
     for i in range(number_of_online_user): # emulate 1000
         t = time.time_ns()
         key= gen_fake_ppg_data(usrID=i,devID=i,timestamp=t)
-        redis.set(name=key,value=1,ex=16) # exp = 16 sec 
-    dt = 1-(time.time_ns()-tmp)/1000000000.000
+        redis.set(name=key,value=1,ex=msg_ttl_sec) # exp = 16 sec 
+    dt = timer_sec-(time.time_ns()-tmp)/1000000000.000
     if(dt <=0):
         dt=0
 
