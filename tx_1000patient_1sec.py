@@ -15,8 +15,8 @@ def gen_fake_ppg_data(usrID,devID,timestamp):
     data_size = 100
     #data = bytearray([123] * data_size)
     ppg = rd.randbytes(data_size)    
-    
-    r = f"u:{usrID}:d:{devID}:ppg:{base64.urlsafe_b64encode(ppg)}:t:{timestamp}"
+    sessionID = 1234
+    r = f"usr:{usrID}:dev:{devID}:sid:{sessionID}:ppg:{base64.urlsafe_b64encode(ppg)}:tim:{timestamp}"
     return r
 
 
@@ -29,6 +29,9 @@ st = time.time_ns()
 dt=0
 timer_sec=1
 msg_ttl_sec = 16
+channel_trigger = "CHECK_COMMING_DATA"
+workerID =1
+batch_sequence=0
 while True:
     
     tmp =time.time_ns()
@@ -38,6 +41,13 @@ while True:
         t = time.time_ns()
         key= gen_fake_ppg_data(usrID=i,devID=i,timestamp=t)
         redis.set(name=key,value=1,ex=msg_ttl_sec) # exp = 16 sec 
+
+    #finish batch of pushing data to Redis
+    msg_pub = f"workerID:{workerID}:packetSeq:{batch_sequence}"
+    batch_sequence=batch_sequence+1
+    redis.publish(channel_trigger,msg_pub)
+    print(channel_trigger+" "+msg_pub)
+
     dt = timer_sec-(time.time_ns()-tmp)/1000000000.000
     if(dt <=0):
         dt=0
