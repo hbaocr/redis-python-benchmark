@@ -26,7 +26,7 @@ while True:
           start = time.time_ns()
           data =redis.scan(match="*",count=64000)
           print(f"---------->it take {(time.time_ns() -start)/1000000} ms  to load: {len(data[1])} msg, offset ={data[0]}")
-     
+          time.sleep(5)
 '''
 st = time.time_ns()
 dt=0

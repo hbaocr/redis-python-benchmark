@@ -1,7 +1,18 @@
-version: "3.2"
-services:
+version: "3.8"
 
-    redis:
+#1. Create the network which 2 service below join in
+#network declare at the same level with version and services 
+# If network fail: try to remove the fail network then rebuild
+networks: 
+    redis_network:
+        driver: bridge
+        ipam: # IP Address Management.
+            config:
+                - subnet: 10.5.0.0/16
+                #- gateway: 10.5.0.1
+
+services:
+    myredis:
         image: "redis:alpine"
         command: redis-server --requirepass p@ssw0rd
         ports:
@@ -9,12 +20,24 @@ services:
         volumes:
             - ./redis-volume/redis-data:/var/lib/redis
             - ./redis-volume/redis.conf:/usr/local/etc/redis/redis.conf
+        networks: 
+            redis_network:
+                ipv4_address: 10.5.0.2
+
         environment:
             - REDIS_REPLICATION_MODE=master
+
 
     redisinsight:
         image: redislabs/redisinsight:latest
         ports:
             - "8001:8001"
         volumes:
-            - ./redis-volume:/db 
+            - ./redis-volume/redisInsightDB:/db
+        networks: 
+            redis_network:
+                ipv4_address: 10.5.0.3
+        depends_on: # run after myredis estashlished
+            - myredis
+
+        

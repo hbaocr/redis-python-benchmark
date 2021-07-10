@@ -3,12 +3,8 @@ import redis
 import base64
 import random as rd
 import time
-
-redis = redis.Redis(
-     host= 'localhost',
-     port= '6379',username='default',password='p@ssw0rd')
-
- 
+import pika
+from pika.exchange_type import ExchangeType
 
 def gen_fake_ppg_data(usrID,devID,timestamp):
     # create the array off 100 byte which val = 123
@@ -21,6 +17,19 @@ def gen_fake_ppg_data(usrID,devID,timestamp):
 
 
 
+url="amqps://hynparma:PTe2P2sFmMVEEbD1rXc1xPOgKajGMBIT@snake.rmq2.cloudamqp.com/hynparma"
+exchange_name_='CheckRedisBuff'
+routing_key_='validtor.cmd'
+params = pika.URLParameters(url)
+connection = pika.BlockingConnection(params)
+channelRMQ = connection.channel()
+# 1. Declare exchange
+channelRMQ.exchange_declare(exchange=exchange_name_,exchange_type=ExchangeType.direct,durable=True)
+
+
+redis = redis.Redis(
+     host= 'localhost',
+     port= '6379',username='default',password='p@ssw0rd')
 
  
 number_of_online_user = 500
@@ -47,12 +56,17 @@ while True:
     #finish batch of pushing data to Redis
     msg_pub = f"workerID:{workerID}:packetSeq:{batch_sequence}"
     batch_sequence=batch_sequence+1
-    redis.publish(channel_trigger,msg_pub)
-    print(channel_trigger+" "+msg_pub)
+    #redis.publish(channel_trigger,msg_pub)
+    print(routing_key_+" : "+msg_pub)
+    channelRMQ.basic_publish(exchange=exchange_name_,routing_key=routing_key_,body=msg_pub)
 
     dt = timer_sec-(time.time_ns()-tmp)/1000000000.000
     if(dt <=0):
         dt=0
 
     time.sleep(dt) #try to make sure 1sec in period
+
+
+
+
 
